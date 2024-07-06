@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI numbers</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+      .flex {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        flex-wrap: wrap;
+        width: 100%;
+        height: 100%;
+        margin: 0 auto;
+        padding: 0;
+      }
+      .row {
+        flex-direction: row;
+      }
+      .col {
+        flex-direction: column;
+      }
+      .wperc50 {
+        width: 50%;
+      }
+      #options {
+        width: 100%;
+        height: 100%;
+        list-style: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AI numbers</h1>
+    <div class="flex col">
+      <div class="flex col wperc50">
+        <div class="flex row">
+          <button id="submit" onclick="commitDrawing()">Submit</button>
+          <button id="clear" onclick="clearCanvas()">Clear</button>
+        </div>
+
+        <canvas id="drawn-numbers" width="600" height="600"> </canvas>
+      </div>
+
+      <div class="wperc50">
+        <ul id="options">
+          <li>1</li>
+          <li>2</li>
+          <li>3</li>
+        </ul>
+      </div>
+    </div>
+    <script src="./handleCanvas.js"></script>
+  </body>
+</html>

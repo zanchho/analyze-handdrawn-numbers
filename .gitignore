@@ -1,5 +1,11 @@
 # temp dir
 uploads/
+
+//ai model -->
+ai/datasets/*/
+ai/test/*/
+model.json
+
 # Logs
 logs
 *.log

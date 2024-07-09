@@ -18,6 +18,10 @@ canvas.addEventListener("mousedown", e => {
     y: e.clientY - canvas.offsetTop,
   }
   prevPos = startPos
+  ctx.lineWidth = 60
+  ctx.beginPath()
+  ctx.arc(startPos.x, startPos.y, 30, 0, 2 * Math.PI, false)
+  ctx.fill()
   draw()
 })
 
@@ -40,7 +44,9 @@ function draw() {
   if (!currentPos) return
   ctx.beginPath()
   ctx.moveTo(prevPos.x, prevPos.y)
-  ctx.lineTo(currentPos.x || prevPos.x, currentPos.y || prevPos.y)
+  ctx.quadraticCurveTo(currentPos.x, currentPos.y, prevPos.x, prevPos.y)
+
+  // ctx.lineTo()
   ctx.stroke()
   prevPos = currentPos
 }
@@ -73,9 +79,13 @@ function drawRandomNoise(numParticles) {
 }
 
 function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  const oldfillstyle = ctx.fillStyle
+  ctx.fillStyle = "white"
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = oldfillstyle
   drawRandomNoise(500)
 }
+clearCanvas()
 function commitDrawing() {
   let dataUrl = canvas.toDataURL()
   postImage(dataUrl)
@@ -99,7 +109,7 @@ async function postImage(dataUrl) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const result = await response.text()
+    const result = await response.json()
     console.log(result)
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error)

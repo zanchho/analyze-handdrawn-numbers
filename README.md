@@ -58,7 +58,6 @@ and `sharp` for image processing.
   "dependencies": {
     "body-parser": "^1.20.2",
     "brain.js": "^2.0.0-beta.23",
-    "brainjs": "^0.7.4",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1",
@@ -105,4 +104,3 @@ This Image shows the Trainingdata getting Trained two times and getting tested a
 ![Screenshot 2024-07-14 115020](https://github.com/user-attachments/assets/3205714f-6545-4f3a-8154-d418d654f0ea)
 This is the Screenshot of the `index.html`. The drawn number gets send to the ai which returns the likelihood of each Number between 0 - 9. The Digit with the highest likelihood gets highlighted.
 I could have engaged more into the Frontend part of the Project but my mainfocus was laying on the AI part so it got designed for the functionality of getting the Input.
-

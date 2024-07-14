@@ -8,72 +8,51 @@ class ImageClassifier {
     this.debug = debug
     this.size = 60 * 60
     this.net = new NeuralNetwork({
-      inputLayerSize: this.size, // Adjusted based on expected input size
-      hiddenLayers: [60],
+      inputLayerSize: this.size,
+      hiddenLayers: [
+        Math.floor(this.size / 2),
+        Math.floor(Math.sqrt(this.size)),
+      ], // Images have x * Y so it will be sqrt
       outputLayerSize: 10,
       activation: "sigmoid",
-      debug: this.debug,
-      log: details => {
-        console.log(details)
-      },
+      debug: false,
     })
   }
 
-  async train(datasetDir) {
-    console.log("Start Training")
-
+  async train(datasetDir, testsetDir) {
     const trainingData = await this.prepareTrainingData(datasetDir)
     console.log("Training data processed:", trainingData.length)
 
-    const maxIterations = trainingData.length // Maximum number of iterations
-    let iterationCount = 0
-    let bestValidationLoss = Infinity //TODO
-    let earlyStopCounter = 0
-    const patience = 50 // Number of epochs with no improvement after which training will be stopped
-
-    while (iterationCount < maxIterations && earlyStopCounter < patience) {
-      const training = trainingData.flatMap(({ input, output }) => ({
-        input,
-        output,
-      }))
-
-      const trained = this.net.train(training, {
-        learningRate: 0.02, // Adjust based on experimentation
-        iterations: 10,
-        errorThresh: 0.001,
-      })
-
-      //   const validationLoss = this.validate(trainingData) // TODO
-
-      //   if (validationLoss < bestValidationLoss) {
-      //     bestValidationLoss = validationLoss
-      //     earlyStopCounter = 0
-      //   } else {
-      //     earlyStopCounter++
-      //   }
-      console.log(
-        `Iteration: ${iterationCount},\tError: ${trained.error}, \tValidation Loss: \${validationLoss}`
-      )
-      iterationCount += trained.iterations
-    }
+    console.log("Starting training")
+    const trainingStartTime = Date.now()
+    this.net.train(trainingData, {
+      learningRate: 0.03,
+      iterations: 50,
+    })
 
     console.log("Done training")
-    console.log()
-    const testData = await this.prepareTestData(path.join("ai", "test"))
+    const trainingEnd = Date.now()
+    const trainingTime = (trainingEnd - trainingStartTime) / 1000
+    console.log(`Training took ${trainingTime} seconds.`)
+
+    if (!testsetDir) return
+    const testData = await this.prepareTestData(testsetDir)
     this.evaluateModel(this.net, testData)
   }
-  async predict(imagePath) {
+  async predict(imagePath, shouldReturnRawPrediction) {
     console.log("Predicting on", imagePath)
 
     const inputData = await this.getUniversalInputData(imagePath)
 
     const prediction = this.net.run(inputData)
     console.log("Raw prediction", prediction)
-
+    if (!!shouldReturnRawPrediction) {
+      return prediction
+    }
     const maxIndex = prediction.indexOf(Math.max(...prediction))
     console.log("Predicted Image might be", maxIndex)
 
-    return prediction
+    return [maxIndex]
   }
 
   async prepareTrainingData(datasetDir) {
@@ -93,7 +72,7 @@ class ImageClassifier {
         trainingData.push({ input: inputData, output: outputData })
       }
     }
-    return trainingData
+    return shuffleArray(trainingData)
   }
   async prepareTestData(testDir) {
     const digits = fs.readdirSync(testDir)
@@ -113,7 +92,7 @@ class ImageClassifier {
       }
     }
 
-    return testData
+    return shuffleArray(testData)
   }
 
   async evaluateModel(model, testData) {
@@ -123,18 +102,23 @@ class ImageClassifier {
     for (const { input, output } of testData) {
       const prediction = model.runInput(input)
       const correct = this.getCorrectPrediction(prediction, output)
-      // i think its cool to see this
+
       if (!correct)
-        console.log(
-          `AI had guessed ${prediction.indexOf(
-            Math.max(...prediction)
-          )} but it was ${output.indexOf(Math.max(...output))}`
-        )
-      else
-        console.log(
-          `prediction was ${correct}: (${output.indexOf(Math.max(...output))})`
-        )
-      if (correct) correctPredictions++
+        if (model.debug)
+          console.log(
+            `AI had guessed ${prediction.indexOf(
+              Math.max(...prediction)
+            )} but it was ${output.indexOf(Math.max(...output))}`
+          )
+        else {
+          if (model.debug)
+            console.log(
+              `prediction was ${correct}: (${output.indexOf(
+                Math.max(...output)
+              )})`
+            )
+          correctPredictions++
+        }
     }
 
     const accuracy = correctPredictions / totalPredictions
@@ -170,6 +154,24 @@ class ImageClassifier {
 }
 
 export default ImageClassifier
+function shuffleArray(arr, iterations = 1) {
+  if (arr.length === 0 || iterations === 0) return arr
+
+  let counter = 0
+  do {
+    //fisher Yates shuffle because i used it before and it did good
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      const temp = arr[i]
+      arr[i] = arr[j]
+      arr[j] = temp
+    }
+    counter++
+  } while (iterations >= counter)
+
+  return arr
+}
+
 function fillMissingElements(data, expectedSize) {
   while (data.length < expectedSize) {
     data.push(0) // Fill up with zeros

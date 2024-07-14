@@ -1,3 +1,5 @@
+const isRandomNoise = false
+
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById("drawn-numbers")
 /** @type {CanvasRenderingContext2D} */
@@ -20,7 +22,7 @@ canvas.addEventListener("mousedown", e => {
   prevPos = startPos
   ctx.lineWidth = 60
   ctx.beginPath()
-  ctx.arc(startPos.x, startPos.y, 30, 0, 2 * Math.PI, false)
+  ctx.arc(startPos.x, startPos.y, 30, 0, 4 * Math.PI, false)
   ctx.fill()
   draw()
 })
@@ -35,6 +37,11 @@ canvas.addEventListener("mousemove", e => {
 })
 
 canvas.addEventListener("mouseup", () => {
+  isDrawing = false
+  currentPos = null
+  prevPos = null
+})
+canvas.addEventListener("mouseleave", () => {
   isDrawing = false
   currentPos = null
   prevPos = null
@@ -83,12 +90,13 @@ function clearCanvas() {
   ctx.fillStyle = "white"
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   ctx.fillStyle = oldfillstyle
-  drawRandomNoise(500)
+  if (isRandomNoise) drawRandomNoise(500)
 }
-clearCanvas()
+
 function commitDrawing() {
   let dataUrl = canvas.toDataURL()
   postImage(dataUrl)
+  // clearCanvas()
 }
 
 async function postImage(dataUrl) {
@@ -110,31 +118,47 @@ async function postImage(dataUrl) {
     }
 
     const result = await response.json()
-    console.log(result)
+    showPrediction(result.data, result.isRaw)
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error)
   }
 }
 
-// async function postImage(data) {
-//   try {
-//     const response = await fetch("http://127.0.0.1:3000/api/image", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         data: data,
-//       }),
-//     })
+function showPrediction(data, isRaw = false) {
+  if (!data) return
+  const prediction = isRaw ? data : res.prediction[0]
 
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`)
-//     }
+  if (isRaw) {
+    for (let i = 0; i < 10; i++) {
+      const el = document.getElementById("value-" + i)
+      el.innerHTML = parseFloat(prediction[i] * 100).toFixed(2) + "%"
+    }
+  }
+  //remove highlight
+  for (let i = 0; i < 10; i++) {
+    const el = document.getElementById("number-" + i)
+    el.style = ""
+  }
+  const maxIndex = isRaw
+    ? Object.keys(data).reduce((maxKey, key) => {
+        return data[key] > data[maxKey] ? key : maxKey
+      }, "0")
+    : prediction
+  const el = document.getElementById("number-" + maxIndex)
+  el.style = "background-color: rgba(255,0,0,0.6)"
+}
 
-//     const result = await response.text()
-//     console.log(result)
-//   } catch (error) {
-//     console.error("There was a problem with the fetch operation:", error)
-//   }
-// }
+function createHTMLOptionList() {
+  const el = document.getElementById("options")
+  const min = 0,
+    max = 9
+  const innerTemplate =
+    "<option id='number-%' value='%'>Number % || <div id='value-%'></div></option>"
+  let innerHTMLList = ""
+  for (let i = min; i <= max; i++) {
+    const option = innerTemplate.replace(/%/g, i)
+    innerHTMLList += option
+  }
+  el.innerHTML = innerHTMLList
+}
+createHTMLOptionList()

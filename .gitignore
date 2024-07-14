@@ -1,10 +1,9 @@
 # temp dir
-uploads/
+uploads/*
 
-//ai model -->
-ai/datasets/*/
-ai/test/*/
-model.json
+# ai model files
+ai/datasets/*/*
+ai/test/*/*
 
 # Logs
 logs

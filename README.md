@@ -99,4 +99,10 @@ which was a good thing. I learned a lot about how to use the library and how to 
 
 ## Screenshots
 
-TODO add screens and explain
+![learningrate0 03Iterations502nd](https://github.com/user-attachments/assets/c874dfc3-4e29-4549-9a9e-a0567fd95eb6)
+This Image shows the Trainingdata getting Trained two times and getting tested afterwards. In this Example i only tested with the testdata from `datatest.zip`, which explains the high difference between the two Accuracys. Both Networks trained on a learningrate of 0.03 and 50 Iterations on 1216 drawn digits.
+
+![Screenshot 2024-07-14 115020](https://github.com/user-attachments/assets/3205714f-6545-4f3a-8154-d418d654f0ea)
+This is the Screenshot of the `index.html`. The drawn number gets send to the ai which returns the likelihood of each Number between 0 - 9. The Digit with the highest likelihood gets highlighted.
+I could have engaged more into the Frontend part of the Project but my mainfocus was laying on the AI part so it got designed for the functionality of getting the Input.
+
